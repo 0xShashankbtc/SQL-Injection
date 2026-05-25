@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SecureBank™ — {% if mode == 'secure' %}Secure{% else %}Vulnerable{% endif %} Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0d14;
+      --panel: #111620;
+      --border: #1e2535;
+      --accent-vuln: #ff3b5c;
+      --accent-sec: #00e5a0;
+      --accent: {% if mode == 'secure' %}#00e5a0{% else %}#ff3b5c{% endif %};
+      --text: #e8eaf0;
+      --muted: #5a6277;
+      --input-bg: #0d1019;
+      --glow: {% if mode == 'secure' %}0 0 40px rgba(0,229,160,0.15){% else %}0 0 40px rgba(255,59,92,0.15){% endif %};
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glowing orb */
+    body::after {
+      content: '';
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, {% if mode == 'secure' %}rgba(0,229,160,0.06){% else %}rgba(255,59,92,0.06){% endif %} 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      padding: 16px;
+    }
+
+    /* Mode switcher banner */
+    .mode-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      margin-bottom: 16px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .mode-banner .badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .badge-vuln { background: rgba(255,59,92,0.15); color: var(--accent-vuln); border: 1px solid rgba(255,59,92,0.3); }
+    .badge-sec  { background: rgba(0,229,160,0.15); color: var(--accent-sec);  border: 1px solid rgba(0,229,160,0.3); }
+
+    .mode-banner a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 11px;
+      transition: opacity 0.2s;
+    }
+    .mode-banner a:hover { opacity: 0.7; }
+
+    /* Card */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 36px;
+      box-shadow: var(--glow);
+      animation: fadeUp 0.5s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 26px;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .logo span { color: var(--accent); }
+
+    .tagline {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 32px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 18px;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px {% if mode == 'secure' %}rgba(0,229,160,0.1){% else %}rgba(255,59,92,0.1){% endif %};
+    }
+
+    .btn {
+      width: 100%;
+      background: var(--accent);
+      color: {% if mode == 'secure' %}#001a0f{% else %}#1a000a{% endif %};
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 8px;
+      padding: 14px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn:hover   { opacity: 0.9; }
+    .btn:active  { transform: scale(0.98); }
+
+    /* Error box */
+    .error-box {
+      background: rgba(255,59,92,0.1);
+      border: 1px solid rgba(255,59,92,0.3);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #ff3b5c;
+      margin-bottom: 18px;
+      word-break: break-all;
+    }
+
+    /* SQL query reveal */
+    .sql-reveal {
+      margin-top: 24px;
+      background: #070a0f;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .sql-reveal .label {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .sql-reveal code {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: #e8b86d;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+
+    /* Cheat sheet */
+    .cheatsheet {
+      margin-top: 14px;
+      background: rgba(255,59,92,0.04);
+      border: 1px dashed rgba(255,59,92,0.2);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .cheatsheet .label {
+      font-size: 10px;
+      color: var(--accent-vuln);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .cheatsheet .payload {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: #ff6b83;
+      background: #0d0509;
+      border-radius: 4px;
+      padding: 5px 8px;
+      margin-bottom: 5px;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cheatsheet .payload:hover { background: #160a0e; }
+    .cheatsheet .payload .tag  { font-size: 9px; color: var(--muted); }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <!-- Mode switcher -->
+    <div class="mode-banner">
+      <span>
+        Demo Mode:&nbsp;
+        {% if mode == 'secure' %}
+          <span class="badge badge-sec">🛡 Secure</span>
+        {% else %}
+          <span class="badge badge-vuln">⚠ Vulnerable</span>
+        {% endif %}
+      </span>
+      {% if mode == 'secure' %}
+        <a href="/login">← Switch to Vulnerable</a>
+      {% else %}
+        <a href="/secure-login">Switch to Secure →</a>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <div class="logo">Secure<span>Bank</span>™</div>
+      <div class="tagline">Trusted Digital Banking Since 2024</div>
+      <h2>Sign in to your account</h2>
+
+      {% if error %}
+        <div class="error-box">⚠ {{ error }}</div>
+      {% endif %}
+
+      <form method="POST">
+        <label>Username</label>
+        <input type="text" name="username" placeholder="Enter username" autocomplete="off" />
+
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Enter password" autocomplete="off" />
+
+        <button type="submit" class="btn">Login →</button>
+      </form>
+
+      {% if sql_query %}
+        <div class="sql-reveal">
+          <div class="label">⚙ Query Executed</div>
+          <code>{{ sql_query }}</code>
+        </div>
+      {% endif %}
+
+      {% if mode == 'vulnerable' %}
+        <div class="cheatsheet">
+          <div class="label">🔥 Try These Payloads (Click to Copy)</div>
+          <div class="payload" onclick="fillPayload(this, 'admin', &quot;' OR '1'='1&quot;)">
+            <span>' OR '1'='1</span>
+            <span class="tag">Password Bypass</span>
+          </div>
+          <div class="payload" onclick="fillPayload(this, &quot;' OR 1=1 --&quot;, 'anything')">
+            <span>' OR 1=1 --</span>
+            <span class="tag">Username Bypass</span>
+          </div>
+          <div class="payload" onclick="fillPayload(this, 'admin', &quot;' OR '1'='1' --&quot;)">
+            <span>' OR '1'='1' --</span>
+            <span class="tag">Comment Injection</span>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="footer-note">
+      🔒 Educational Demo Only &nbsp;|&nbsp; <a href="/reset-db" style="color:var(--muted);">Reset DB</a>
+    </div>
+  </div>
+
+  <script>
+    function fillPayload(el, user, pass) {
+      document.querySelector('input[name="username"]').value = user;
+      document.querySelector('input[name="password"]').value = pass;
+      // flash
+      el.style.background = '#1a0810';
+      setTimeout(() => el.style.background = '', 300);
+    }
+  </script>
+</body>
+</html>
